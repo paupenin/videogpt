@@ -3,6 +3,7 @@ import uuid
 from fastapi import FastAPI, File, UploadFile, Request, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import StreamingResponse
+from video_search import extract_frames, match_query_to_frame 
 
 app = FastAPI()
 
@@ -87,4 +88,19 @@ async def create_upload_file(file: UploadFile = File(...)):
 # POST /video/{video_path}/search to search for a video frame.
 @app.post("/video/{video_path}/search")
 def search_video_frame(video_path: str, text: str):
-    return {"url": video_path, "text": text, "time": 10}
+    video_file_path = os.path.join(STORAGE_DIR, video_path)
+    
+    if not os.path.exists(video_file_path):
+        raise HTTPException(status_code=404, detail="Video not found")
+    
+    # Extract frames and their timestamps
+    frames, timestamps = extract_frames(video_file_path)
+
+    # Match query to frames
+    match_time = match_query_to_frame(frames, timestamps, text)
+    
+    return {
+        "url": f"/media/{video_path}",
+        "text": text,
+        "time": match_time  # Time in seconds where the first match is found
+    }

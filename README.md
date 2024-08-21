@@ -10,7 +10,7 @@ This repository contains a test project to search for frames in a video using Na
 cd backend
 python3 -m venv venv
 source venv/bin/activate
-pip3 install "fastapi[standard]"
+pip3 install "fastapi[standard]" opencv-python-headless torch transformers Pillow
 fastapi dev main.py
 ```
 
